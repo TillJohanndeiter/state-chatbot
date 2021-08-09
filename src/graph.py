@@ -12,7 +12,7 @@ def get_model_template(state_names: [str], all_classes: [str]) -> str:
     return json.dumps(model_as_dict, indent=4)
 
 
-def load_model(model_path: Path):
+def load_graph(model_path: Path):
     assert model_path.exists()
     assert model_path.is_file()
 

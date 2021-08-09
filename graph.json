@@ -1,0 +1,38 @@
+{
+    "GREET_USER": {
+        "classToTransitions": {
+            "START": "NONE",
+            "END": "NONE"
+        }
+    },
+    "GIVE_OPTIONS": {
+        "classToTransitions": {
+            "START": "NONE",
+            "END": "NONE"
+        }
+    },
+    "MAKE_COFFEE": {
+        "classToTransitions": {
+            "START": "NONE",
+            "END": "NONE"
+        }
+    },
+    "MAKE_TEE": {
+        "classToTransitions": {
+            "START": "NONE",
+            "END": "NONE"
+        }
+    },
+    "MAKE_CHOCOLATE": {
+        "classToTransitions": {
+            "START": "NONE",
+            "END": "NONE"
+        }
+    },
+    "END": {
+        "classToTransitions": {
+            "START": "NONE",
+            "END": "NONE"
+        }
+    }
+}
