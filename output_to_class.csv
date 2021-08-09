@@ -1,0 +1,57 @@
+Hey,GREET_USER
+Hey man,GREET_USER
+Hi,GREET_USER
+How’s it going?,GREET_USER
+How are you doing?,GREET_USER
+What’s up?,GREET_USER
+What’s new?,GREET_USER
+What’s going on?,GREET_USER
+How’s everything?,GREET_USER
+How are things?,GREET_USER
+How’s life?,GREET_USER
+How’s your day?,GREET_USER
+How’s your day going?,GREET_USER
+Good to see you,GREET_USER
+Nice to see you,GREET_USER
+Long time no see,GREET_USER
+It’s been a while,GREET_USER
+Good morning,GREET_USER
+Good afternoon,GREET_USER
+Good evening,GREET_USER
+It’s nice to meet you,GREET_USER
+Pleased to meet you,GREET_USER
+How have you been?,GREET_USER
+How do you do?,GREET_USER
+Yo!,GREET_USER
+Are you OK?,GREET_USER
+You alright?,GREET_USER
+Alright mate?,GREET_USER
+Howdy!,GREET_USER
+Sup?,GREET_USER
+Whazzup?,GREET_USER
+G’day mate!,GREET_USER
+Hiya!,GREET_USER
+
+bye,GOODBYE
+Bye bye!,GOODBYE
+See you later,GOODBYE
+See you soon,GOODBYE
+Talk to you later,GOODBYE
+I’ve got to get going,GOODBYE
+I must be going,GOODBYE
+Have a nice day,GOODBYE
+I’m off,GOODBYE
+Goodbye,GOODBYE
+Have a nice day,GOODBYE
+I look forward to our next meeting,GOODBYE
+Take care,GOODBYE
+It was nice to see you again,GOODBYE
+It was nice seeing you,GOODBYE
+Good night,GOODBYE
+Later,GOODBYE
+Laters,GOODBYE
+Catch you later,GOODBYE
+Peace,GOODBYE
+Peace out,GOODBYE
+
+You can get Coffee or Tea or hot chocolate,GIVE_OPTIONS

@@ -1,38 +1,62 @@
 {
-    "GREET_USER": {
+    "START": {
         "classToTransitions": {
-            "START": "NONE",
-            "END": "NONE"
-        }
+            "WANT_COFFEE": "MAKE_COFFEE",
+            "WANT_CHOCOLATE": "MAKE_CHOCOLATE",
+            "WANT_TEE": "MAKE_TEE"
+        },
+        "sayOnEntry": "GREET_USER",
+        "sayOnExit": null,
+        "nextState": "GIVE_OPTIONS"
     },
     "GIVE_OPTIONS": {
         "classToTransitions": {
-            "START": "NONE",
-            "END": "NONE"
-        }
+            "WANT_COFFEE": "MAKE_COFFEE",
+            "WANT_CHOCOLATE": "MAKE_CHOCOLATE",
+            "WANT_TEE": "MAKE_TEE"
+        },
+        "sayOnEntry": "GIVE_OPTIONS",
+        "sayOnExit": null,
+        "nextState": null
     },
     "MAKE_COFFEE": {
         "classToTransitions": {
-            "START": "NONE",
-            "END": "NONE"
-        }
+            "WANT_COFFEE": "MAKE_COFFEE",
+            "WANT_CHOCOLATE": "MAKE_CHOCOLATE",
+            "WANT_TEE": "MAKE_TEE"
+        },
+        "sayOnEntry": null,
+        "sayOnExit": null,
+        "nextState": "END"
     },
     "MAKE_TEE": {
         "classToTransitions": {
-            "START": "NONE",
-            "END": "NONE"
-        }
+            "WANT_COFFEE": "MAKE_COFFEE",
+            "WANT_CHOCOLATE": "MAKE_CHOCOLATE",
+            "WANT_TEE": "MAKE_TEE"
+        },
+        "sayOnEntry": null,
+        "sayOnExit": null,
+        "nextState": "END"
     },
     "MAKE_CHOCOLATE": {
         "classToTransitions": {
-            "START": "NONE",
-            "END": "NONE"
-        }
+            "WANT_COFFEE": "MAKE_COFFEE",
+            "WANT_CHOCOLATE": "MAKE_CHOCOLATE",
+            "WANT_TEE": "MAKE_TEE"
+        },
+        "sayOnEntry": null,
+        "sayOnExit": null,
+        "nextState": "END"
     },
     "END": {
         "classToTransitions": {
-            "START": "NONE",
-            "END": "NONE"
-        }
+            "WANT_COFFEE": null,
+            "WANT_CHOCOLATE": null,
+            "WANT_TEE": null
+        },
+        "sayOnEntry": null,
+        "sayOnExit": "GOODBYE",
+        "nextState": null
     }
 }

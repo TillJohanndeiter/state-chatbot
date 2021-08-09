@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 
 from src.language_model import read_csv_file, LanguageModelApi
-from src.graph import get_model_template, load_graph
+from src.graph import get_model_template, load_graph, END_STATE, START_STATE
 
 CSV_FILE_ARG = 'samples'
 GRAPH_ARG = 'graph'
@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(f'-{CSV_FILE_ARG[0]}', f'--{CSV_FILE_ARG}',
                     type=str,
                     help='csv file with sample and corresponding classes',
-                    default='samples_to_class.csv')
+                    default='input_to_class.csv')
 parser.add_argument(f'-{GRAPH_ARG[0]}', f'--{GRAPH_ARG}',
                     type=str,
                     help='json file that specify model with nodes and transitions',
@@ -32,11 +32,11 @@ parser.add_argument(f'-{TRAIN_ARG[0]}', f'--{TRAIN_ARG}',
 
 parser.add_argument(f'-{CREATE_GRAPH_TEMPLATE[0]}', f'--{CREATE_GRAPH_TEMPLATE}',
                     nargs="+",
-                    help='create template for model json file based on state names')
+                    help='create template for model json file based on next_state names')
 
 
 def write_model_template():
-    state_names = args[CREATE_GRAPH_TEMPLATE]
+    state_names = START_STATE + args[CREATE_GRAPH_TEMPLATE] + END_STATE
     if len(state_names) and state_names[0].isnumeric():
         state_names = list(range(int(state_names[0])))
     state_names = [str(state_name) for state_name in state_names]
@@ -44,6 +44,17 @@ def write_model_template():
 
     with open(DEFAULT_GRAPH_PATH, 'w') as file:
         file.write(model_json)
+
+
+def load_output_to_class(path: Path):
+    dataset = read_csv_file(path)
+    all_output_classes = set(sample[1] for sample in dataset)
+    output_to_cls = {cls: [] for cls in all_output_classes}
+
+    for text, cls in dataset:
+        output_to_cls[cls].append(text)
+
+    return output_to_cls
 
 
 if __name__ == '__main__':
@@ -63,13 +74,11 @@ if __name__ == '__main__':
         lng_model = LanguageModelApi()
         lng_model.train_model(filepath_of_csv)
         lng_model.save_model(model_path)
-
     else:
         filepath_model = args[GRAPH_ARG]
-        graph_json = load_graph(Path(filepath_model))
         lng_model = LanguageModelApi(model_path)
 
-        user_input = ""
-        while user_input != "exit":
-            user_input = input("Enter sentence to classify")
-            print(lng_model.classify_sentence(user_input))
+        output_to_class = load_output_to_class(Path('output_to_class.csv'))
+
+        graph_json = load_graph(Path(filepath_model), output_to_class, lng_model)
+        graph_json.start_input_loop()

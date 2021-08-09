@@ -2,17 +2,20 @@ import re
 from pathlib import Path
 from random import shuffle
 from numpy import argmax
+from shutil import rmtree
+
 import json
 
 import tensorflow as tf
-from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras.optimizers import Adam
-
-import tensorflow_text as text
-import tensorflow_hub as hub
 from tensorflow.keras.utils import to_categorical
+
+# Do not remove this import
+import tensorflow_text as text
+
+import tensorflow_hub as hub
 
 
 def clean_up(str_to_clean: str) -> str:
@@ -70,11 +73,18 @@ class LanguageModelApi:
             self.model = self.__create_model(len(self.classes_to_id))
             self.model.load_weights(model_filepath.joinpath(CHECKPOINT_FILENAME))
 
-    def classify_sentence(self, sentence: str):
+    def classify_sentence(self, sentence: str, allowed_classes=None):
         self.__assert_model_trained()
         sentence = tf.constant([sentence])
-        one_hot_encoded_vec = self.model(sentence)
-        id = argmax(one_hot_encoded_vec)
+        softmax_output = self.model(sentence)
+
+        if allowed_classes is not None:
+            not_allowed_classes = filter(lambda a: a not in allowed_classes,
+                                         self.classes_to_id.keys())
+            for cls in not_allowed_classes:
+                softmax_output[self.classes_to_id[cls]] = 0
+
+        id = argmax(softmax_output)
         return self.id_to_class[id]
 
     def __assert_model_trained(self):
@@ -102,13 +112,15 @@ class LanguageModelApi:
         self.id_to_class = {id: cls for cls, id in self.classes_to_id.items()}
 
         train_x = tf.constant([sample for sample, cls in train_dataset])
-        train_y = to_categorical([self.classes_to_id[cls] for sample, cls in train_dataset])
+        train_y = to_categorical([self.classes_to_id[cls] for sample, cls in train_dataset],
+                                 num_classes=len(all_classes))
 
         test_x = tf.constant([sample for sample, cls in test_dataset])
-        test_y = to_categorical([self.classes_to_id[cls] for sample, cls in test_dataset])
+        test_y = to_categorical([self.classes_to_id[cls] for sample, cls in test_dataset],
+                                num_classes=len(all_classes))
 
         self.model.fit(x=train_x, y=train_y,
-                       batch_size=16, epochs=1,
+                       batch_size=1, epochs=3,
                        # callbacks=[EarlyStopping()],
                        validation_split=0.2)
 
@@ -131,15 +143,16 @@ class LanguageModelApi:
 
         output = Dense(num_classes, activation='softmax')(pooled_output)
 
-        model = Model(inputs=text_input, outputs=output, name='evi_bert')
-        model.compile(loss='categorical_crossentropy', optimizer=Adam(learning_rate=1e-5),
+        model = Model(inputs=text_input, outputs=output)
+        model.compile(loss='categorical_crossentropy', optimizer=Adam(learning_rate=0.0001),
                       metrics='accuracy')
 
         return model
 
     def save_model(self, filepath: Path):
         self.__assert_model_trained()
-        assert not filepath.exists()
+        if filepath.exists():
+            rmtree(str(filepath))
         filepath.mkdir()
         self.model.save_weights(filepath.joinpath(CHECKPOINT_FILENAME))
 
