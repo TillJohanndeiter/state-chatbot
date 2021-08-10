@@ -1,11 +1,9 @@
-import re
-import csv
+import json
 from pathlib import Path
 from random import shuffle
-from numpy import argmax
 from shutil import rmtree
 
-import json
+from numpy import argmax
 
 import tensorflow as tf
 from tensorflow.keras import Model
@@ -17,11 +15,31 @@ import tensorflow_text as text
 
 import tensorflow_hub as hub
 
-
 CHECKPOINT_FILENAME = 'checkpoint'
 DICTIONARIES_FILENAME = 'dictionaries'
 CLASSES_TO_ID_DICT = 'classes_to_id'
 ID_TO_CLASSES_DICT = 'id_to_classes'
+
+
+def create_model(num_classes: int):
+    text_input = Input(shape=(), dtype=tf.string)
+    preprocessor = hub.KerasLayer(
+        "https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3")
+    encoder_inputs = preprocessor(text_input)
+
+    encoder = hub.KerasLayer(
+        "https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-4_H-512_A-8/2",
+        trainable=True)
+    outputs = encoder(encoder_inputs)
+    pooled_output = outputs["pooled_output"]
+
+    output = Dense(num_classes, activation='softmax')(pooled_output)
+
+    model = Model(inputs=text_input, outputs=output)
+    model.compile(loss='categorical_crossentropy', optimizer=Adam(learning_rate=0.0001),
+                  metrics='accuracy')
+
+    return model
 
 
 class LanguageModelApi:
@@ -46,7 +64,7 @@ class LanguageModelApi:
                 self.id_to_class = {int(k): v for k, v in self.id_to_class.items()}
                 self.classes_to_id = import_dict[CLASSES_TO_ID_DICT]
 
-            self.model = self.__create_model(len(self.classes_to_id))
+            self.model = create_model(len(self.classes_to_id))
             self.model.load_weights(model_filepath.joinpath(CHECKPOINT_FILENAME))
 
     def classify_sentence(self, sentence: str, allowed_classes=None):
@@ -60,8 +78,8 @@ class LanguageModelApi:
             for cls in not_allowed_classes:
                 softmax_output[self.classes_to_id[cls]] = 0
 
-        id = argmax(softmax_output)
-        return self.id_to_class[id]
+        id_of_max_class = argmax(softmax_output)
+        return self.id_to_class[id_of_max_class]
 
     def __assert_model_trained(self):
         assert self.model is not None
@@ -72,7 +90,7 @@ class LanguageModelApi:
         shuffle(dataset)
         all_classes = set(cls for _, cls in dataset)
 
-        self.model = self.__create_model(len(all_classes))
+        self.model = create_model(len(all_classes))
         self.model.summary()
 
         test_train_split = int(0.8 * len(dataset))
@@ -111,29 +129,8 @@ class LanguageModelApi:
         confusion_matrix = tf.math.confusion_matrix(labels=labels, predictions=predictions,
                                                     num_classes=len(all_classes))
 
-        print(f'Confusion matrix of complete dataset:')
+        print('Confusion matrix of complete dataset:')
         print(confusion_matrix.numpy())
-
-    def __create_model(self, num_classes: int):
-        text_input = Input(shape=(), dtype=tf.string)
-        preprocessor = hub.KerasLayer(
-            "https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3")
-        encoder_inputs = preprocessor(text_input)
-
-        encoder = hub.KerasLayer(
-            "https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-4_H-512_A-8/2",
-            trainable=True)
-        outputs = encoder(encoder_inputs)
-        pooled_output = outputs["pooled_output"]
-        sequence_output = outputs["sequence_output"]
-
-        output = Dense(num_classes, activation='softmax')(pooled_output)
-
-        model = Model(inputs=text_input, outputs=output)
-        model.compile(loss='categorical_crossentropy', optimizer=Adam(learning_rate=0.0001),
-                      metrics='accuracy')
-
-        return model
 
     def save_model(self, filepath: Path):
         self.__assert_model_trained()
