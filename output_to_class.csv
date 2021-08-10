@@ -55,6 +55,24 @@ Catch you later,GOODBYE
 Peace,GOODBYE
 Peace out,GOODBYE
 
+Do you want milk?,ASK_MILK
+Would you like to have some milk?,ASK_MILK
+Can i offer you some milk?,ASK_MILK
+
+Do you want some sugar?,ASK_SUGAR
+Would you like to have some sugar?,ASK_SUGAR
+Can i offer you some sugar?,ASK_SUGAR
+
+Okay,CONFIRM
+Ok,CONFIRM
+Fine,CONFIRM
+I understand,CONFIRM
+
+Please verify your order,ASK_TO_VERIFY_ORDER
+Would you like verify your order,ASK_TO_VERIFY_ORDER
+Is the order correct?,ASK_TO_VERIFY_ORDER
+
+
 "You can get Coffee, Tea or hot chocolate. What can i serve to you?",GIVE_OPTIONS
 "Today you can get Tea, Coffee or hot chocolate. What can I do for you?",GIVE_OPTIONS
 "What would you like to drink? We have Coffee, Tea and hot chocolate",GIVE_OPTIONS

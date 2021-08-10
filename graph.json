@@ -1,62 +1,71 @@
 {
-    "START": {
-        "classToTransitions": {
-            "WANT_COFFEE": "MAKE_COFFEE",
-            "WANT_CHOCOLATE": "MAKE_CHOCOLATE",
-            "WANT_TEE": "MAKE_TEE"
-        },
-        "sayOnEntry": "GREET_USER",
-        "sayOnExit": null,
-        "nextState": "GIVE_OPTIONS"
+  "START": {
+    "classToTransitions": {
+      "WANT_COFFEE": "MAKE_COFFEE",
+      "WANT_CHOCOLATE": "MAKE_CHOCOLATE",
+      "WANT_TEE": "MAKE_TEE"
     },
-    "GIVE_OPTIONS": {
-        "classToTransitions": {
-            "WANT_COFFEE": "MAKE_COFFEE",
-            "WANT_CHOCOLATE": "MAKE_CHOCOLATE",
-            "WANT_TEE": "MAKE_TEE"
-        },
-        "sayOnEntry": "GIVE_OPTIONS",
-        "sayOnExit": null,
-        "nextState": null
+    "sayOnEntry": "GREET_USER",
+    "sayOnExit": null,
+    "nextState": "GIVE_OPTIONS"
+  },
+  "GIVE_OPTIONS": {
+    "classToTransitions": {
+      "WANT_COFFEE": "MAKE_COFFEE",
+      "WANT_CHOCOLATE": "MAKE_CHOCOLATE",
+      "WANT_TEE": "MAKE_TEE"
     },
-    "MAKE_COFFEE": {
-        "classToTransitions": {
-            "WANT_COFFEE": "MAKE_COFFEE",
-            "WANT_CHOCOLATE": "MAKE_CHOCOLATE",
-            "WANT_TEE": "MAKE_TEE"
-        },
-        "sayOnEntry": null,
-        "sayOnExit": null,
-        "nextState": "END"
+    "sayOnEntry": "GIVE_OPTIONS",
+    "sayOnExit": null,
+    "nextState": null
+  },
+  "MAKE_COFFEE": {
+    "sayOnEntry": null,
+    "sayOnExit": null,
+    "nextState": "ASK_MILK"
+  },
+  "MAKE_TEE": {
+    "sayOnEntry": null,
+    "sayOnExit": null,
+    "nextState": "ASK_MILK"
+  },
+  "MAKE_CHOCOLATE": {
+    "nextState": "ASK_MILK"
+  },
+  "ASK_MILK": {
+    "classToTransitions": {
+      "YES": "ADD_MILK",
+      "NO": "ASK_SUGAR",
+      "RESET": "GIVE_OPTIONS"
     },
-    "MAKE_TEE": {
-        "classToTransitions": {
-            "WANT_COFFEE": "MAKE_COFFEE",
-            "WANT_CHOCOLATE": "MAKE_CHOCOLATE",
-            "WANT_TEE": "MAKE_TEE"
-        },
-        "sayOnEntry": null,
-        "sayOnExit": null,
-        "nextState": "END"
+    "sayOnEntry": "ASK_MILK"
+  },
+  "ADD_MILK": {
+    "sayOnEntry": "CONFIRM",
+    "nextState": "ASK_SUGAR"
+  },
+  "ASK_SUGAR": {
+    "classToTransitions": {
+      "YES": "ADD_SUGAR",
+      "NO": "VERIFY_ORDER",
+      "RESET": "GIVE_OPTIONS"
     },
-    "MAKE_CHOCOLATE": {
-        "classToTransitions": {
-            "WANT_COFFEE": "MAKE_COFFEE",
-            "WANT_CHOCOLATE": "MAKE_CHOCOLATE",
-            "WANT_TEE": "MAKE_TEE"
-        },
-        "sayOnEntry": null,
-        "sayOnExit": null,
-        "nextState": "END"
+    "sayOnEntry": "ASK_MILK"
+
+  },
+  "ADD_SUGAR": {
+    "nextState": "VERIFY_ORDER",
+    "sayOnEntry": "CONFIRM"
+  },
+  "VERIFY_ORDER": {
+    "classToTransitions": {
+      "YES": "END",
+      "NO": "GIVE_OPTIONS",
+      "RESET": "GIVE_OPTIONS"
     },
-    "END": {
-        "classToTransitions": {
-            "WANT_COFFEE": null,
-            "WANT_CHOCOLATE": null,
-            "WANT_TEE": null
-        },
-        "sayOnEntry": null,
-        "sayOnExit": "GOODBYE",
-        "nextState": null
-    }
+    "sayOnEntry": "ASK_TO_VERIFY_ORDER"
+  },
+  "END": {
+    "sayOnExit": "GOODBYE"
+  }
 }

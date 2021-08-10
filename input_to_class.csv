@@ -28,3 +28,25 @@ Hot Chocolate,WANT_CHOCOLATE
 A Hot Chocolate,WANT_CHOCOLATE
 I like Chocolate,WANT_CHOCOLATE
 I’ll Chocolate,WANT_CHOCOLATE
+
+
+Yes,YES
+Yes please,YES
+Okay,YES
+I agree to you,YES
+I'm fine with that,YES
+Yes of course!,YES
+
+No,NO
+No please,NO
+I am not okay with this,NO
+I'm not okay,NO
+
+
+Please reset, RESET
+Please reset my order, RESET
+The order is not okay, RESET
+You messed up something, RESET
+I want to reset the order, RESET
+I want to reset, RESET
+Restart the order, RESET

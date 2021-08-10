@@ -72,7 +72,7 @@ class LanguageModelApi:
     def classify_sentence(self, sentence: str, allowed_classes=None):
         self.__assert_model_trained()
         sentence = tf.constant([sentence])
-        softmax_output = self.model(sentence)
+        softmax_output = self.model(sentence).numpy()[0]
 
         if allowed_classes is not None:
             not_allowed_classes = filter(lambda a: a not in allowed_classes,
@@ -115,13 +115,13 @@ class LanguageModelApi:
                                 num_classes=len(all_classes))
 
         self.model.fit(x=train_x, y=train_y,
-                       batch_size=1, epochs=3,
+                       batch_size=1, epochs=5,
                        # callbacks=[EarlyStopping()],
                        validation_split=0.2)
 
         scores = self.model.evaluate(x=test_x, y=test_y, verbose=1)
 
-        log.info(f'Test accuracy: {scores[1]}')
+        print(f'Test accuracy: {scores[1]}')
 
         labels = [self.classes_to_id[a[1]] for a in dataset]
 
@@ -131,8 +131,8 @@ class LanguageModelApi:
         confusion_matrix = tf.math.confusion_matrix(labels=labels, predictions=predictions,
                                                     num_classes=len(all_classes))
 
-        log.info('Confusion matrix of complete dataset:')
-        log.info(confusion_matrix.numpy())
+        print('Confusion matrix of complete dataset:')
+        print(confusion_matrix.numpy())
 
     def save_model(self, filepath: Path):
         self.__assert_model_trained()

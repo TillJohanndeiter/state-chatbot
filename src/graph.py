@@ -6,6 +6,7 @@ from random import choice
 CLASS_TO_TRANSITIONS = 'classToTransitions'
 SAY_ON_ENTRY = 'sayOnEntry'
 SAY_ON_EXIT = 'sayOnExit'
+# TODO: Rename to alwaysNextState
 NEXT_STATE = 'nextState'
 
 START_STATE = "START"
@@ -32,7 +33,8 @@ class State:
         self.__next_state = next_state
 
     def do_transition(self, graph):
-        assert self.__cls_to_transition is not None
+        assert self.__cls_to_transition is not None \
+               or self.__next_state is not None or self.name == END_STATE
 
         if self.__say_on_entry is not None:
             print(choice(self.__say_on_entry))
@@ -76,12 +78,6 @@ class State:
         return self.name
 
 
-class MakeCoffee(State):
-
-    def on_entry(self):
-        log.info('Callback to rEallY make Coffe :)')
-
-
 class Graph:
 
     def __init__(self, init_state: State):
@@ -103,6 +99,9 @@ def load_graph(model_path: Path, class_to_output: dict, language_model) -> Graph
         model_json = json.load(model_file)
 
         name_to_node = {}
+
+        # Import required to load all subclasses of state
+        from src.coffee import MakeCoffee, MakeTee, MakeChocolate, VerifyOrder
 
         for state_name in model_json:
             say_on_entry = None
@@ -130,13 +129,16 @@ def load_graph(model_path: Path, class_to_output: dict, language_model) -> Graph
 
         for state_name in model_json:
             state = name_to_node[state_name]
-            state.set_cls_to_transition(
-                {cls: name_to_node[name] for cls, name in
-                 model_json[state_name][CLASS_TO_TRANSITIONS].items() if name is not None})
+            state_json = model_json[state_name]
 
-            if NEXT_STATE in model_json[state_name] and model_json[state_name][
-                NEXT_STATE] is not None:
-                state.set_next_state(name_to_node[model_json[state_name][NEXT_STATE]])
+            if CLASS_TO_TRANSITIONS in state_json:
+                state.set_cls_to_transition(
+                    {cls: name_to_node[name] for cls, name in
+                     state_json[CLASS_TO_TRANSITIONS].items() if name is not None})
+
+            # TODO: Load all cls's and set all transition to next state
+            if NEXT_STATE in state_json and state_json[NEXT_STATE] is not None:
+                state.set_next_state(name_to_node[state_json[NEXT_STATE]])
 
     init_state = name_to_node[START_STATE]
 

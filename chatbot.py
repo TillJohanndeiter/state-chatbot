@@ -1,8 +1,8 @@
 import argparse
 import csv
 import logging as log
+import sys
 from pathlib import Path
-
 from src.graph import get_model_template, load_graph, END_STATE, START_STATE
 
 CSV_FILE_ARG = 'samples'
@@ -52,7 +52,7 @@ def read_csv_file(filepath: Path) -> [(str, str)]:
         for row in reader:
             # No comment or empty line
             if len(row) > 0 and not row[0].startswith('#'):
-                text_sample, class_of_sample = row[0], row[1]
+                text_sample, class_of_sample = row[0].strip(), row[1].strip()
                 samples_to_class.append((text_sample, class_of_sample))
 
     return samples_to_class
@@ -92,6 +92,7 @@ if __name__ == '__main__':
         Path(TRAINED_MODEL_FOLDER).mkdir()
 
     if args[VERBOSITY_ARG]:
+        log.StreamHandler(stream=sys.stdout)
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
