@@ -17,32 +17,6 @@ import tensorflow_text as text
 
 import tensorflow_hub as hub
 
-OUTPUT = 'output'
-CLASS = 'class'
-
-
-def clean_up(str_to_clean: str) -> str:
-    str_to_clean = re.sub('\n', '', str_to_clean)
-    str_to_clean = str_to_clean.strip()
-    return str_to_clean
-
-
-def read_csv_file(filepath: Path) -> [(str, str)]:
-    assert filepath.exists()
-    assert filepath.is_file()
-    samples_to_class = []
-
-    with open(filepath, 'r') as csv_file:
-        reader = csv.reader(csv_file)
-        next(reader)
-        for row in reader:
-            # No comment or empty line
-            if len(row) > 0 and not row[0].startswith('#'):
-                text_sample, class_of_sample = row[0], row[1]
-                samples_to_class.append((text_sample, class_of_sample))
-
-    return samples_to_class
-
 
 CHECKPOINT_FILENAME = 'checkpoint'
 DICTIONARIES_FILENAME = 'dictionaries'
@@ -94,8 +68,7 @@ class LanguageModelApi:
         assert self.classes_to_id is not None
         assert self.id_to_class is not None
 
-    def train_model(self, filepath):
-        dataset = read_csv_file(filepath)
+    def train_model(self, dataset):
         shuffle(dataset)
         all_classes = set(cls for _, cls in dataset)
 

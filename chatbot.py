@@ -1,7 +1,7 @@
 import argparse
+import csv
 from pathlib import Path
 
-from src.language_model import read_csv_file, LanguageModelApi
 from src.graph import get_model_template, load_graph, END_STATE, START_STATE
 
 CSV_FILE_ARG = 'samples'
@@ -34,6 +34,23 @@ parser.add_argument(f'-{TRAIN_ARG[0]}', f'--{TRAIN_ARG}',
 parser.add_argument(f'-{CREATE_GRAPH_ARG[0]}', f'--{CREATE_GRAPH_ARG}',
                     nargs="+",
                     help='Create template for model json file')
+
+
+def read_csv_file(filepath: Path) -> [(str, str)]:
+    assert filepath.exists()
+    assert filepath.is_file()
+    samples_to_class = []
+
+    with open(filepath, 'r') as csv_file:
+        reader = csv.reader(csv_file)
+        next(reader)
+        for row in reader:
+            # No comment or empty line
+            if len(row) > 0 and not row[0].startswith('#'):
+                text_sample, class_of_sample = row[0], row[1]
+                samples_to_class.append((text_sample, class_of_sample))
+
+    return samples_to_class
 
 
 def write_model_template():
@@ -72,10 +89,12 @@ if __name__ == '__main__':
     if args[CREATE_GRAPH_ARG] is not None:
         write_model_template()
     elif args[TRAIN_ARG]:
+        from src.language_model import LanguageModelApi
         lng_model = LanguageModelApi()
-        lng_model.train_model(filepath_of_csv)
+        lng_model.train_model(read_csv_file(Path(filepath_of_csv)))
         lng_model.save_model(model_path)
     else:
+        from src.language_model import LanguageModelApi
         filepath_model = args[GRAPH_ARG]
         lng_model = LanguageModelApi(model_path)
 
