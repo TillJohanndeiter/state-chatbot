@@ -54,4 +54,6 @@ Catch you later,GOODBYE
 Peace,GOODBYE
 Peace out,GOODBYE
 
-You can get Coffee or Tea or hot chocolate,GIVE_OPTIONS
+You can get Coffee or Tea or hot chocolate. What can i serve to you?,GIVE_OPTIONS
+Today you can get Tea, Coffee or hot chocolate. What can I do for you?,GIVE_OPTIONS
+What would you like to drink? We have Coffee, Tea and hot chocolate,GIVE_OPTIONS

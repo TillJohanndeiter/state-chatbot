@@ -1,16 +1,25 @@
 Coffee please,WANT_COFFEE
+A Coffee please,WANT_COFFEE
 Would you like to give me a Coffee?,WANT_COFFEE
 Coffee,WANT_COFFEE
+A Coffee,WANT_COFFEE
 I like Coffee,WANT_COFFEE
+I’ll have a cup of coffee,WANT_COFFEE
 
+I’ll have a Tee,WANT_TEE
 Tee please,WANT_TEE
+A Tee please,WANT_TEE
 Would you like to give me a Tee?,WANT_TEE
 Tee,WANT_TEE
+A Tee,WANT_TEE
 I like Tee,WANT_TEE
 
 Chocolate please,WANT_CHOCOLATE
 Hot Chocolate please,WANT_CHOCOLATE
 Would you like to give me a Hot Chocolate?,WANT_CHOCOLATE
 Chocolate,WANT_CHOCOLATE
+A Chocolate,WANT_CHOCOLATE
 Hot Chocolate,WANT_CHOCOLATE
+A Hot Chocolate,WANT_CHOCOLATE
 I like Chocolate,WANT_CHOCOLATE
+I’ll Chocolate,WANT_CHOCOLATE

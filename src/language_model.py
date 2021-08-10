@@ -11,7 +11,6 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import to_categorical
-
 # Do not remove this import
 import tensorflow_text as text
 
@@ -126,7 +125,18 @@ class LanguageModelApi:
 
         scores = self.model.evaluate(x=test_x, y=test_y, verbose=1)
 
-        print(f'Accuracy: {scores[1]}')
+        print(f'Test accuracy: {scores[1]}')
+
+        labels = [self.classes_to_id[a[1]] for a in dataset]
+
+        predictions = self.model(tf.constant([a[0] for a in dataset]))
+        predictions = tf.math.argmax(predictions, 1).numpy()
+
+        confusion_matrix = tf.math.confusion_matrix(labels=labels, predictions=predictions,
+                                                    num_classes=len(all_classes))
+
+        print(f'Confusion matrix of complete dataset:')
+        print(confusion_matrix.numpy())
 
     def __create_model(self, num_classes: int):
         text_input = Input(shape=(), dtype=tf.string)

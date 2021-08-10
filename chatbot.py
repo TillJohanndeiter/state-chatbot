@@ -7,42 +7,43 @@ from src.graph import get_model_template, load_graph, END_STATE, START_STATE
 CSV_FILE_ARG = 'samples'
 GRAPH_ARG = 'graph'
 MODEL_ARG = 'model'
-CREATE_GRAPH_TEMPLATE = 'createGraphTemplate'
-
-DEFAULT_GRAPH_PATH = 'graph.json'
+CREATE_GRAPH_ARG = 'createGraphTemplate'
 TRAIN_ARG = 'train'
+
+DEFAULT_GRAPH_FILENAME = 'graph.json'
+OUTPUT_TO_CLASS_FILENAME = 'output_to_class.csv'
 TRAINED_MODEL_FOLDER = 'trainedModels'
 
 parser = argparse.ArgumentParser()
 parser.add_argument(f'-{CSV_FILE_ARG[0]}', f'--{CSV_FILE_ARG}',
                     type=str,
-                    help='csv file with sample and corresponding classes',
+                    help='Csv file with user input and labeled classes',
                     default='input_to_class.csv')
 parser.add_argument(f'-{GRAPH_ARG[0]}', f'--{GRAPH_ARG}',
                     type=str,
                     help='json file that specify model with nodes and transitions',
-                    default='graph.json')
+                    default=DEFAULT_GRAPH_FILENAME)
 parser.add_argument(f'-{MODEL_ARG[0]}', f'--{MODEL_ARG}',
                     type=str,
-                    help='json file that specify model with nodes and transitions',
+                    help='Folder of used language model',
                     default=f'{TRAINED_MODEL_FOLDER}/model')
 parser.add_argument(f'-{TRAIN_ARG[0]}', f'--{TRAIN_ARG}',
                     action='store_true',
                     help='Train model based on dataset')
 
-parser.add_argument(f'-{CREATE_GRAPH_TEMPLATE[0]}', f'--{CREATE_GRAPH_TEMPLATE}',
+parser.add_argument(f'-{CREATE_GRAPH_ARG[0]}', f'--{CREATE_GRAPH_ARG}',
                     nargs="+",
-                    help='create template for model json file based on next_state names')
+                    help='Create template for model json file')
 
 
 def write_model_template():
-    state_names = START_STATE + args[CREATE_GRAPH_TEMPLATE] + END_STATE
+    state_names = [START_STATE] + args[CREATE_GRAPH_ARG] + [END_STATE]
     if len(state_names) and state_names[0].isnumeric():
         state_names = list(range(int(state_names[0])))
     state_names = [str(state_name) for state_name in state_names]
     model_json = get_model_template(state_names, all_classes)
 
-    with open(DEFAULT_GRAPH_PATH, 'w') as file:
+    with open(args[GRAPH_ARG], 'w') as file:
         file.write(model_json)
 
 
@@ -68,7 +69,7 @@ if __name__ == '__main__':
     if not Path(TRAINED_MODEL_FOLDER).exists():
         Path(TRAINED_MODEL_FOLDER).mkdir()
 
-    if args[CREATE_GRAPH_TEMPLATE] is not None:
+    if args[CREATE_GRAPH_ARG] is not None:
         write_model_template()
     elif args[TRAIN_ARG]:
         lng_model = LanguageModelApi()
@@ -78,7 +79,7 @@ if __name__ == '__main__':
         filepath_model = args[GRAPH_ARG]
         lng_model = LanguageModelApi(model_path)
 
-        output_to_class = load_output_to_class(Path('output_to_class.csv'))
+        output_to_class = load_output_to_class(Path(OUTPUT_TO_CLASS_FILENAME))
 
         graph_json = load_graph(Path(filepath_model), output_to_class, lng_model)
         graph_json.start_input_loop()
