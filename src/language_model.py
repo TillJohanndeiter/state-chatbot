@@ -1,4 +1,5 @@
 import json
+import logging as log
 from pathlib import Path
 from random import shuffle
 from shutil import rmtree
@@ -23,6 +24,7 @@ ID_TO_CLASSES_DICT = 'id_to_classes'
 
 def create_model(num_classes: int):
     text_input = Input(shape=(), dtype=tf.string)
+    log.info('Load language model')
     preprocessor = hub.KerasLayer(
         "https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3")
     encoder_inputs = preprocessor(text_input)
@@ -119,7 +121,7 @@ class LanguageModelApi:
 
         scores = self.model.evaluate(x=test_x, y=test_y, verbose=1)
 
-        print(f'Test accuracy: {scores[1]}')
+        log.info(f'Test accuracy: {scores[1]}')
 
         labels = [self.classes_to_id[a[1]] for a in dataset]
 
@@ -129,8 +131,8 @@ class LanguageModelApi:
         confusion_matrix = tf.math.confusion_matrix(labels=labels, predictions=predictions,
                                                     num_classes=len(all_classes))
 
-        print('Confusion matrix of complete dataset:')
-        print(confusion_matrix.numpy())
+        log.info('Confusion matrix of complete dataset:')
+        log.info(confusion_matrix.numpy())
 
     def save_model(self, filepath: Path):
         self.__assert_model_trained()

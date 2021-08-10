@@ -1,4 +1,5 @@
 import json
+import logging as log
 from pathlib import Path
 from random import choice
 
@@ -24,35 +25,36 @@ class State:
 
     def __init__(self, name, language_model, say_on_entry=None, say_on_exit=None, next_state=None):
         self.name = name
-        self.language_model = language_model
+        self.__language_model = language_model
         self.__cls_to_transition = None
-        self.say_on_entry = say_on_entry
-        self.say_on_exit = say_on_exit
+        self.__say_on_entry = say_on_entry
+        self.__say_on_exit = say_on_exit
         self.__next_state = next_state
 
     def do_transition(self, graph):
         assert self.__cls_to_transition is not None
 
-        if self.say_on_entry is not None:
-            print(choice(self.say_on_entry))
+        if self.__say_on_entry is not None:
+            print(choice(self.__say_on_entry))
         self.on_entry()
 
-        if self.__next_state is None:
+        if self.__next_state is None and self.name != END_STATE:
             user_input = input()
-            cls = self.language_model.classify_sentence(user_input, self.__cls_to_transition.keys())
-            print(f'Classified as {cls}')
+            cls = self.__language_model.classify_sentence(user_input,
+                                                          self.__cls_to_transition.keys())
+            log.info(f'"{user_input}" classified as {cls}')
             next_state = self.__cls_to_transition[cls]
         else:
             next_state = self.__next_state
 
         self.on_exit()
 
-        if self.say_on_exit is not None:
-            print(choice(self.say_on_exit))
+        if self.__say_on_exit is not None:
+            print(choice(self.__say_on_exit))
 
         graph.set_state(next_state)
 
-        if next_state.name != END_STATE:
+        if self.name != END_STATE:
             next_state.do_transition(graph)
 
     def on_exit(self):
@@ -77,7 +79,7 @@ class State:
 class MakeCoffee(State):
 
     def on_entry(self):
-        print('Callback to rEallY make Coffe :)')
+        log.info('Callback to rEallY make Coffe :)')
 
 
 class Graph:
@@ -86,7 +88,7 @@ class Graph:
         self.__current_state = init_state
 
     def set_state(self, state: State):
-        print(f'Next state {state}')
+        log.info(f'Set next state: {state}')
         self.__current_state = state
 
     def start_input_loop(self):

@@ -1,5 +1,6 @@
 import argparse
 import csv
+import logging as log
 from pathlib import Path
 
 from src.graph import get_model_template, load_graph, END_STATE, START_STATE
@@ -9,9 +10,10 @@ GRAPH_ARG = 'graph'
 MODEL_ARG = 'model'
 CREATE_GRAPH_ARG = 'createGraphTemplate'
 TRAIN_ARG = 'train'
-
+VERBOSITY_ARG = 'verbose'
 DEFAULT_GRAPH_FILENAME = 'graph.json'
 OUTPUT_TO_CLASS_FILENAME = 'output_to_class.csv'
+INPUT_TO_CLASS_FILENAME = 'input_to_class.csv'
 TRAINED_MODEL_FOLDER = 'trainedModels'
 
 parser = argparse.ArgumentParser()
@@ -19,6 +21,9 @@ parser.add_argument(f'-{CSV_FILE_ARG[0]}', f'--{CSV_FILE_ARG}',
                     type=str,
                     help='Csv file with user input and labeled classes',
                     default='input_to_class.csv')
+parser.add_argument(f'-{VERBOSITY_ARG[0]}', f'--{VERBOSITY_ARG}',
+                    help='Csv file with user input and labeled classes',
+                    action='store_true')
 parser.add_argument(f'-{GRAPH_ARG[0]}', f'--{GRAPH_ARG}',
                     type=str,
                     help='json file that specify model with nodes and transitions',
@@ -86,15 +91,24 @@ if __name__ == '__main__':
     if not Path(TRAINED_MODEL_FOLDER).exists():
         Path(TRAINED_MODEL_FOLDER).mkdir()
 
+    if args[VERBOSITY_ARG]:
+        log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
+    else:
+        log.basicConfig(format="%(levelname)s: %(message)s")
+
+    log.info("This should be verbose.")
+
     if args[CREATE_GRAPH_ARG] is not None:
         write_model_template()
     elif args[TRAIN_ARG]:
         from src.language_model import LanguageModelApi
+
         lng_model = LanguageModelApi()
         lng_model.train_model(read_csv_file(Path(filepath_of_csv)))
         lng_model.save_model(model_path)
     else:
         from src.language_model import LanguageModelApi
+
         filepath_model = args[GRAPH_ARG]
         lng_model = LanguageModelApi(model_path)
 
