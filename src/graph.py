@@ -33,7 +33,6 @@ class State:
     def do_transition(self, graph):
         assert self.__cls_to_transition is not None
 
-
         if self.say_on_entry is not None:
             print(choice(self.say_on_entry))
         self.on_entry()
