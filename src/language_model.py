@@ -11,7 +11,8 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import to_categorical
-# Do not remove this import
+# Do not remove this import required to use preprocessor
+# pylint: disable=unused-import
 import tensorflow_text as text
 
 import tensorflow_hub as hub

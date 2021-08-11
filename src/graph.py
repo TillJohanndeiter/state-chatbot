@@ -6,7 +6,6 @@ from random import choice
 CLASS_TO_TRANSITIONS = 'classToTransitions'
 SAY_ON_ENTRY = 'sayOnEntry'
 SAY_ON_EXIT = 'sayOnExit'
-# TODO: Rename to alwaysNextState
 NEXT_STATE = 'nextState'
 
 START_STATE = "START"
@@ -24,13 +23,13 @@ def get_model_template(state_names: [str], all_classes: [str]) -> str:
 
 class State:
 
-    def __init__(self, name, language_model, say_on_entry=None, say_on_exit=None, next_state=None):
+    def __init__(self, name, language_model, say_on_entry=None, say_on_exit=None):
         self.name = name
         self.__language_model = language_model
         self.__cls_to_transition = None
+        self.__next_state = None
         self.__say_on_entry = say_on_entry
         self.__say_on_exit = say_on_exit
-        self.__next_state = next_state
 
     def do_transition(self, graph):
         assert self.__cls_to_transition is not None \
@@ -44,7 +43,7 @@ class State:
             user_input = input()
             cls = self.__language_model.classify_sentence(user_input,
                                                           self.__cls_to_transition.keys())
-            log.info(f'"{user_input}" classified as {cls}')
+            log.info('"%s" classified as %s', user_input, cls)
             next_state = self.__cls_to_transition[cls]
         else:
             next_state = self.__next_state
@@ -55,9 +54,6 @@ class State:
             print(choice(self.__say_on_exit))
 
         graph.set_state(next_state)
-
-        if self.name != END_STATE:
-            next_state.do_transition(graph)
 
     def on_exit(self):
         pass
@@ -84,11 +80,12 @@ class Graph:
         self.__current_state = init_state
 
     def set_state(self, state: State):
-        log.info(f'Set next state: {state}')
+        log.info('Set next state: %s', state)
         self.__current_state = state
 
     def start_input_loop(self):
-        self.__current_state.do_transition(self)
+        while self.__current_state.name != END_STATE:
+            self.__current_state.do_transition(self)
 
 
 def load_graph(model_path: Path, class_to_output: dict, language_model) -> Graph:
@@ -99,47 +96,46 @@ def load_graph(model_path: Path, class_to_output: dict, language_model) -> Graph
         model_json = json.load(model_file)
 
         name_to_node = {}
-
-        # Import required to load all subclasses of state
+        # pylint: disable=unused-import disable=import-outside-toplevel disable=cyclic-import
         from src.coffee import MakeCoffee, MakeTee, MakeChocolate, VerifyOrder
 
         for state_name in model_json:
-            say_on_entry = None
-            say_on_exit = None
-
-            state_json = model_json[state_name]
-
-            if SAY_ON_ENTRY in state_json and state_json[SAY_ON_ENTRY] is not None:
-                say_on_entry = class_to_output[state_json[SAY_ON_ENTRY]]
-
-            if SAY_ON_EXIT in state_json and state_json[SAY_ON_EXIT] is not None:
-                say_on_exit = class_to_output[state_json[SAY_ON_EXIT]]
-
-            all_subclasses = [cls for cls in State.__subclasses__() if
-                              cls.__name__.lower() == state_name.replace('_', '').lower()]
-
-            if len(all_subclasses) > 0:
-                name_to_node[state_name] = all_subclasses[0](state_name, language_model,
-                                                             say_on_entry=say_on_entry,
-                                                             say_on_exit=say_on_exit)
-            else:
-                name_to_node[state_name] = State(state_name, language_model,
-                                                 say_on_entry=say_on_entry,
-                                                 say_on_exit=say_on_exit)
+            _load_node(class_to_output, language_model, model_json, name_to_node, state_name)
 
         for state_name in model_json:
-            state = name_to_node[state_name]
-            state_json = model_json[state_name]
-
-            if CLASS_TO_TRANSITIONS in state_json:
-                state.set_cls_to_transition(
-                    {cls: name_to_node[name] for cls, name in
-                     state_json[CLASS_TO_TRANSITIONS].items() if name is not None})
-
-            # TODO: Load all cls's and set all transition to next state
-            if NEXT_STATE in state_json and state_json[NEXT_STATE] is not None:
-                state.set_next_state(name_to_node[state_json[NEXT_STATE]])
+            _set_transitions_to_node(model_json, name_to_node, state_name)
 
     init_state = name_to_node[START_STATE]
 
     return Graph(init_state)
+
+
+def _set_transitions_to_node(model_json, name_to_node, state_name):
+    state = name_to_node[state_name]
+    state_json = model_json[state_name]
+    if CLASS_TO_TRANSITIONS in state_json:
+        state.set_cls_to_transition(
+            {cls: name_to_node[name] for cls, name in
+             state_json[CLASS_TO_TRANSITIONS].items() if name is not None})
+    if NEXT_STATE in state_json and state_json[NEXT_STATE] is not None:
+        state.set_next_state(name_to_node[state_json[NEXT_STATE]])
+
+
+def _load_node(class_to_output, language_model, model_json, name_to_node, state_name):
+    say_on_entry = None
+    say_on_exit = None
+    state_json = model_json[state_name]
+    if SAY_ON_ENTRY in state_json and state_json[SAY_ON_ENTRY] is not None:
+        say_on_entry = class_to_output[state_json[SAY_ON_ENTRY]]
+    if SAY_ON_EXIT in state_json and state_json[SAY_ON_EXIT] is not None:
+        say_on_exit = class_to_output[state_json[SAY_ON_EXIT]]
+    all_subclasses = [cls for cls in State.__subclasses__() if
+                      cls.__name__.lower() == state_name.replace('_', '').lower()]
+    if len(all_subclasses) > 0:
+        name_to_node[state_name] = all_subclasses[0](state_name, language_model,
+                                                     say_on_entry=say_on_entry,
+                                                     say_on_exit=say_on_exit)
+    else:
+        name_to_node[state_name] = State(state_name, language_model,
+                                         say_on_entry=say_on_entry,
+                                         say_on_exit=say_on_exit)
