@@ -1,3 +1,6 @@
+'''
+Script to start or train the chatbot.
+'''
 import argparse
 import csv
 import logging as log
@@ -5,9 +8,10 @@ import sys
 from pathlib import Path
 from src.graph import get_model_template, load_graph, END_STATE, START_STATE
 
-CSV_FILE_ARG = 'samples'
+INPUT_DS_CSV = 'inputDs'
+OUTPUT_DS_CSV = 'outputDs'
 GRAPH_ARG = 'graph'
-MODEL_ARG = 'model'
+MODEL_NAME_ARG = 'model'
 CREATE_GRAPH_ARG = 'createGraphTemplate'
 TRAIN_ARG = 'train'
 VERBOSITY_ARG = 'verbose'
@@ -17,10 +21,10 @@ INPUT_TO_CLASS_FILENAME = 'input_to_class.csv'
 TRAINED_MODEL_FOLDER = 'trainedModels'
 
 parser = argparse.ArgumentParser()
-parser.add_argument(f'-{CSV_FILE_ARG[0]}', f'--{CSV_FILE_ARG}',
+parser.add_argument(f'-{INPUT_DS_CSV[0]}', f'--{INPUT_DS_CSV}',
                     type=str,
                     help='Csv file with user input and labeled classes',
-                    default='input_to_class.csv')
+                    default=INPUT_TO_CLASS_FILENAME)
 parser.add_argument(f'-{VERBOSITY_ARG[0]}', f'--{VERBOSITY_ARG}',
                     help='Csv file with user input and labeled classes',
                     action='store_true')
@@ -28,7 +32,7 @@ parser.add_argument(f'-{GRAPH_ARG[0]}', f'--{GRAPH_ARG}',
                     type=str,
                     help='json file that specify model with nodes and transitions',
                     default=DEFAULT_GRAPH_FILENAME)
-parser.add_argument(f'-{MODEL_ARG[0]}', f'--{MODEL_ARG}',
+parser.add_argument(f'-{MODEL_NAME_ARG[0]}', f'--{MODEL_NAME_ARG}',
                     type=str,
                     help='Folder of used language model',
                     default=f'{TRAINED_MODEL_FOLDER}/model')
@@ -42,6 +46,11 @@ parser.add_argument(f'-{CREATE_GRAPH_ARG[0]}', f'--{CREATE_GRAPH_ARG}',
 
 
 def read_csv_file(filepath: Path) -> [(str, str)]:
+    '''
+    Read the csv file at filepath.
+    :param filepath: filepath of csv file
+    :return: list of parsed tuples (input/output, class)
+    '''
     assert filepath.exists()
     assert filepath.is_file()
     samples_to_class = []
@@ -58,7 +67,11 @@ def read_csv_file(filepath: Path) -> [(str, str)]:
     return samples_to_class
 
 
-def write_model_template():
+def write_graph_template():
+    '''
+    Write .json template for graph to filepath passed by GRAPH_ARG argument
+    :return: None
+    '''
     state_names = [START_STATE] + args[CREATE_GRAPH_ARG] + [END_STATE]
     if len(state_names) and state_names[0].isnumeric():
         state_names = list(range(int(state_names[0])))
@@ -70,6 +83,11 @@ def write_model_template():
 
 
 def load_output_to_class(path: Path):
+    '''
+    Load dictionary that map output to classes/label
+    :param path: path of output csv file
+    :return: output to class dictionary
+    '''
     dataset = read_csv_file(path)
     all_output_classes = set(sample[1] for sample in dataset)
     output_to_cls = {cls: [] for cls in all_output_classes}
@@ -83,10 +101,10 @@ def load_output_to_class(path: Path):
 if __name__ == '__main__':
     args = vars(parser.parse_args())
 
-    filepath_of_csv = Path(args[CSV_FILE_ARG])
-    model_path = Path(args[MODEL_ARG])
-    sample_to_classes = read_csv_file(filepath_of_csv)
-    all_classes = list(set(cls for sample, cls in sample_to_classes))
+    filepath_of_input_csv = Path(args[INPUT_DS_CSV])
+    model_path = Path(args[MODEL_NAME_ARG])
+    input_to_classes = read_csv_file(filepath_of_input_csv)
+    all_classes = list(set(cls for sample, cls in input_to_classes))
 
     if not Path(TRAINED_MODEL_FOLDER).exists():
         Path(TRAINED_MODEL_FOLDER).mkdir()
@@ -97,15 +115,13 @@ if __name__ == '__main__':
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
 
-    log.info("This should be verbose.")
-
     if args[CREATE_GRAPH_ARG] is not None:
-        write_model_template()
+        write_graph_template()
     elif args[TRAIN_ARG]:
         from src.language_model import LanguageModelApi
 
         lng_model = LanguageModelApi()
-        lng_model.train_model(read_csv_file(Path(filepath_of_csv)))
+        lng_model.train_model(input_to_classes)
         lng_model.save_model(model_path)
     else:
         from src.language_model import LanguageModelApi

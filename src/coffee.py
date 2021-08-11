@@ -1,3 +1,6 @@
+'''
+Example for use on_entry and on_exit callbacks.
+'''
 from src.graph import State
 
 MILK = 'Milk'
@@ -52,6 +55,9 @@ class AddSugar(State):
 
     def on_entry(self):
         coffee_machine.add_order(SUGAR)
+
+    def on_exit(self):
+        pass
 
 
 class VerifyOrder(State):

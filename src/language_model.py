@@ -1,3 +1,7 @@
+'''
+Language model to classify user input.
+'''
+
 import json
 import logging as log
 from pathlib import Path
@@ -24,6 +28,12 @@ ID_TO_CLASSES_DICT = 'id_to_classes'
 
 
 def create_model(num_classes: int):
+    '''
+    Create model with bert layer and map to one-hot encoded vector with length num_classes
+    :param num_classes: number of classes in leaned dataset
+    :return: model
+    '''
+
     text_input = Input(shape=(), dtype=tf.string)
     log.info('Load language model')
     preprocessor = hub.KerasLayer(
@@ -46,6 +56,9 @@ def create_model(num_classes: int):
 
 
 class LanguageModelApi:
+    '''
+    Api to train and classify user input
+    '''
 
     def __init__(self, model_filepath=None):
 
@@ -71,6 +84,14 @@ class LanguageModelApi:
             self.model.load_weights(model_filepath.joinpath(CHECKPOINT_FILENAME))
 
     def classify_sentence(self, sentence: str, allowed_classes=None):
+        '''
+        Given sentence is classified by the network. The probabilities that are not in
+        allowed_classes are set to zero.
+        :param sentence: sentence to classify
+        :param allowed_classes: allowed classification results
+        :return: predicted class
+        '''
+
         self.__assert_model_trained()
         sentence = tf.constant([sentence])
         softmax_output = self.model(sentence).numpy()[0]
@@ -90,6 +111,11 @@ class LanguageModelApi:
         assert self.id_to_class is not None
 
     def train_model(self, dataset):
+        '''
+        Train the language model based on the dataset.
+        :param dataset: ground truth
+        :return: None
+        '''
         shuffle(dataset)
         all_classes = set(cls for _, cls in dataset)
 
@@ -136,6 +162,11 @@ class LanguageModelApi:
         print(confusion_matrix.numpy())
 
     def save_model(self, filepath: Path):
+        '''
+        Save the model and class id dictionaries to filepath
+        :param filepath: save folder
+        :return: None
+        '''
         self.__assert_model_trained()
         if filepath.exists():
             rmtree(str(filepath))

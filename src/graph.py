@@ -1,3 +1,6 @@
+'''
+Model for interaction graph.
+'''
 import json
 import logging as log
 from pathlib import Path
@@ -13,6 +16,13 @@ END_STATE = "END"
 
 
 def get_model_template(state_names: [str], all_classes: [str]) -> str:
+    '''
+    generate json template for graph model.
+    :param state_names: name of all states
+    :param all_classes: all labels of user inputs
+    :return: json template
+    '''
+
     model_as_dict = {}
     for state in state_names:
         model_as_dict[state] = {CLASS_TO_TRANSITIONS: {cls: None for cls in all_classes},
@@ -22,6 +32,9 @@ def get_model_template(state_names: [str], all_classes: [str]) -> str:
 
 
 class State:
+    '''
+    State/Node in the conversation graph.
+    '''
 
     def __init__(self, name, language_model, say_on_entry=None, say_on_exit=None):
         self.name = name
@@ -32,6 +45,11 @@ class State:
         self.__say_on_exit = say_on_exit
 
     def do_transition(self, graph):
+        '''
+        Execute transition and set next state to graph
+        :param graph: transition graph of the state
+        :return: None
+        '''
         assert self.__cls_to_transition is not None \
                or self.__next_state is not None or self.name == END_STATE
 
@@ -56,10 +74,16 @@ class State:
         graph.set_state(next_state)
 
     def on_exit(self):
-        pass
+        '''
+        Callback if state is left
+        :return: None
+        '''
 
     def on_entry(self):
-        pass
+        '''
+        Callback if state is reached
+        :return: None
+        '''
 
     def set_cls_to_transition(self, cls_to_transition: dict):
         self.__cls_to_transition = cls_to_transition
@@ -75,6 +99,9 @@ class State:
 
 
 class Graph:
+    '''
+    Represents conversation flow.
+    '''
 
     def __init__(self, init_state: State):
         self.__current_state = init_state
@@ -89,6 +116,14 @@ class Graph:
 
 
 def load_graph(model_path: Path, class_to_output: dict, language_model) -> Graph:
+    '''
+    load graph from json file and set up graph with node.
+    :param model_path: path of json file
+    :param class_to_output:
+    :param language_model: fine tuned language model
+    :return: Created Graph from json file
+    '''
+
     assert model_path.exists()
     assert model_path.is_file()
 
@@ -105,9 +140,8 @@ def load_graph(model_path: Path, class_to_output: dict, language_model) -> Graph
         for state_name in model_json:
             _set_transitions_to_node(model_json, name_to_node, state_name)
 
-    init_state = name_to_node[START_STATE]
-
-    return Graph(init_state)
+        init_state = name_to_node[START_STATE]
+        return Graph(init_state)
 
 
 def _set_transitions_to_node(model_json, name_to_node, state_name):
